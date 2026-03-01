@@ -1,3 +1,14 @@
+from flask import Flask, request, render_template_string
+import pickle
+import numpy as np
+import os
+
+app = Flask(__name__)
+
+# Load model safely
+model_path = os.path.join(os.path.dirname(__file__), "..", "model.pkl")
+model = pickle.load(open(model_path, "rb"))
+
 html_form = """
 <!DOCTYPE html>
 <html>
@@ -77,3 +88,26 @@ html_form = """
 </body>
 </html>
 """
+
+@app.route("/", methods=["GET"])
+def home():
+    return render_template_string(html_form, prediction_text="")
+
+@app.route("/predict", methods=["POST"])
+def predict():
+    try:
+        f1 = float(request.form["feature1"])
+        f2 = float(request.form["feature2"])
+        f3 = float(request.form["feature3"])
+        f4 = float(request.form["feature4"])
+        f5 = float(request.form["feature5"])
+
+        features = np.array([[f1, f2, f3, f4, f5]])
+        prediction = model.predict(features)
+
+        result_text = f"Predicted Price: {prediction[0]:,.2f}"
+
+        return render_template_string(html_form, prediction_text=result_text)
+
+    except Exception as e:
+        return render_template_string(html_form, prediction_text="Error in input values")
