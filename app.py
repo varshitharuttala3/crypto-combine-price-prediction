@@ -38,5 +38,11 @@ def predict():
 
     return render_template_string(html_form, prediction_text=f"Prediction: {prediction[0]}")
 
-if __name__ == "__main__":
-    app.run()
+@app.route("/predict", methods=["POST"])
+def predict():
+    f1 = float(request.form["feature1"])
+    f2 = float(request.form["feature2"])
+
+    prediction = model.predict([[f1, f2]])
+
+    return render_template_string(html_form, prediction_text=f"Predicted Price: {prediction[0]}")
